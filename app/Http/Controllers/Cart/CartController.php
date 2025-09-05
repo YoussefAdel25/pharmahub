@@ -14,6 +14,7 @@ class CartController extends \App\Http\Controllers\Controller
         $request->validate([
             'product_id' => 'required|exists:products,id',
             'quantity'   => 'required|integer|min:1',
+            'price'      => 'nullable|numeric|min:0',
         ]);
 
         $userId = Auth::id();
@@ -24,7 +25,8 @@ class CartController extends \App\Http\Controllers\Controller
             'product_id' => $productId,
         ]);
 
-        $cartItem->quantity += $request->quantity;
+        $cartItem->quantity += (int) $request->quantity;
+        $cartItem->price = $request->price;
         $cartItem->save();
 
         return response()->json(['success' => true, 'quantity' => $cartItem->quantity]);
@@ -35,7 +37,7 @@ class CartController extends \App\Http\Controllers\Controller
         $userId = auth()->id();
         $cartItems = CartItem::with('product')->where('user_id', $userId)->get();
 
-        $total = $cartItems->sum(fn($item) => $item->product->price * $item->quantity);
+        $total = $cartItems->sum(fn($item) => $item->price * $item->quantity);
         $count = $cartItems->sum('quantity');
 
         $html = view('cart.items', compact('cartItems'))->render();
@@ -57,7 +59,8 @@ class CartController extends \App\Http\Controllers\Controller
             ->first();
 
         if ($cartItem) {
-            $cartItem->quantity = $request->quantity;
+            $cartItem->quantity = (int) $request->quantity;
+            $cartItem->price = $request->price ?? $cartItem->price;
             $cartItem->save();
         }
 

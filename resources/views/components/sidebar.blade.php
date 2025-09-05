@@ -16,15 +16,15 @@
         {{-- ✅ Supplier --}}
         @if(Auth::user() && Auth::user()->role === 'supplier')
             <li><a href="{{ route('products.index') }}">My Products</a></li>
-            <li><a href="{{ route('orders.index') }}">Orders from Pharmacies</a></li>
+            <li><a href="{{ route('supplier.orders.index') }}">Orders from Customers</a></li>
             <li><a href="{{ route('regions.suppliers') }}">Delivery Regions</a></li>
 
         @endif
 
         {{-- ✅ Customer --}}
-        @if(Auth::user() && Auth::user()->role === 'Customer')
-            <li><a href="{{ route('suppliers.index') }}">Browse Products</a></li>
-            <li><a href="">My Orders</a></li>
+        @if(Auth::user() && Auth::user()->role === 'customer')
+            <li><a href="{{ route('products.productsForCustomer') }}">Browse Products</a></li>
+            <li><a href="{{ route('orders.index') }}">My Orders</a></li>
         @endif
     </ul>
 </div>

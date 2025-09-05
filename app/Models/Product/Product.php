@@ -13,7 +13,7 @@ class Product extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['supplier_id', 'name', 'description', 'price', 'stock', 'quota_limit', 'image'];
+    protected $fillable = ['supplier_id', 'name', 'description', 'price', 'stock', 'quota_limit', 'image','type','quota_period'];
 
     public function supplier()
     {

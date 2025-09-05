@@ -88,4 +88,5 @@ class RegionController extends Controller
 
         return response()->json(['message' => 'Region removed successfully']);
     }
+    
 }

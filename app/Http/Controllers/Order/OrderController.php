@@ -3,56 +3,54 @@
 namespace App\Http\Controllers\Order;
 
 use App\Models\Order\Order;
+use Illuminate\Http\Request;
 use App\Models\Order\OrderItem;
 use App\Models\Product\Product;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
-    public function store(Request $request)
+    public function index()
     {
-        $data = $request->validate([
-            'items' => 'required|array',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity'   => 'required|integer|min:1',
-        ]);
+        $userId = auth()->id();
 
-        $order = Order::create([
-            'user_id' => auth()->id(),
-            'status'  => 'pending',
-        ]);
+        $orders = Order::with('items.product')
+            ->where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-        foreach ($data['items'] as $item) {
-            $product = Product::findOrFail($item['product_id']);
+        return view('orders.index', compact('orders'));
+    }
 
-            OrderItem::create([
-                'order_id'   => $order->id,
-                'product_id' => $product->id,
-                'quantity'   => $item['quantity'],
-                'price'      => $product->price, 
-            ]);
+    public function cancel($orderId)
+    {
+        $userId = Auth::id();
+        $order = Order::where('id', $orderId)->where('user_id', $userId)->firstOrFail();
+
+        // if (in_array($order->status, ['completed', 'partially_completed', 'cancelled'])) {
+        //     return redirect()->back()->with('error', 'Cannot cancel this order.');
+        // }
+
+        DB::beginTransaction();
+
+        try {
+            foreach ($order->items as $item) {
+                $product = $item->product;
+                if ($product) {
+                    $product->increment('stock', $item->quantity_executed);
+                }
+            }
+
+            $order->update(['status' => 'cancelled']);
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Order has been cancelled successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Failed to cancel the order. Please try again.');
         }
-
-        return response()->json($order->load('items.product'), 201);
-    }
-
-    public function show($id)
-    {
-        $order = Order::with('items.product')->findOrFail($id);
-        return response()->json($order);
-    }
-
-    public function updateStatus(Request $request, $id)
-    {
-        $order = Order::findOrFail($id);
-
-        $data = $request->validate([
-            'status' => 'required|in:pending,delivered,cancelled,partial',
-        ]);
-
-        $order->update(['status' => $data['status']]);
-
-        return response()->json($order);
     }
 }

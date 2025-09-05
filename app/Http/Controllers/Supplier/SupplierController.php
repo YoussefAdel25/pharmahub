@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Supplier;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 use App\Models\Product\Product;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use App\Models\Order\SupplierDiscount;
 
 class SupplierController extends Controller
 {
@@ -13,12 +15,14 @@ class SupplierController extends Controller
     {
         $user = auth()->user();
 
-
-        $suppliers = User::where('role', 'supplier')
-            ->where('region_id', $user->region_id)
+        $suppliers = DB::table('region_supplier')
+            ->where('region_supplier.region_id', $user->region_id)
+            ->join('users', 'region_supplier.supplier_id', '=', 'users.id')
+            ->select('users.*')
             ->get();
 
-        return view('Customer.suppliers', compact('suppliers'));
+
+        return view('customer.suppliers', compact('suppliers'));
     }
 
     public function showSupplierProducts($supplier_id)
@@ -30,6 +34,17 @@ class SupplierController extends Controller
 
         $products = Product::where('supplier_id', $supplier_id)->get();
 
-        return view('Customer.products', compact('supplier', 'products'));
+        return view('customer.products', compact('supplier', 'products'));
+    }
+    public function showProduct($id)
+    {
+        $product= Product::findOrFail($id);
+                $discount = SupplierDiscount::where('supplier_id', $product->supplier_id)
+            ->where('product_id', $id)
+            ->first();
+        $discount = $discount ? $discount->discount_rate : 0;
+
+
+        return view('products.show', compact('product', 'discount'));
     }
 }

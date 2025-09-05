@@ -6,9 +6,12 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Cart\CartController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\Order\OrderController;
+use App\Http\Controllers\cart\CheckoutController;
 use App\Http\Controllers\Region\RegionController;
 use App\Http\Controllers\Product\ProductController;
+use App\Http\Controllers\Customer\CustomerController;
 use App\Http\Controllers\Supplier\SupplierController;
+use App\Http\Controllers\order\SupplierOrdersController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -28,6 +31,12 @@ Route::middleware('auth')->group(function () {
 
 
 Route::middleware('auth')->group(function () {
+    Route::post('/cart/checkout', [CheckoutController::class, 'checkout'])->name('cart.checkout');
+
+
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::get('/supplier/{id}/products', [SupplierController::class, 'products'])->name('supplier.products');
+    Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
 
     //admin
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
@@ -51,10 +60,26 @@ Route::middleware('auth')->group(function () {
 
     //supplier
 
-    Route::get('products', [ProductController::class, 'index'])->name('products.index');
+    Route::prefix('supplier')->group(function () {
+        Route::controller(ProductController::class)->group(function () {
+            Route::get('products', 'index')->name('products.index');
+            Route::get('products/create', 'create')->name('products.create');
+            Route::post('products/store', 'store')->name('products.store');
+            Route::get('products/show/{id}', 'show')->name('products.show');
+            Route::get('products/edit/{id}', 'edit')->name('products.edit');
+            Route::put('products/update/{id}', 'update')->name('products.update');
+            Route::delete('products/delete/{id}', 'destroy')->name('products.destroy');
 
-    Route::get('products/create', [ProductController::class, 'create'])->name('products.create');
-    Route::get('products/{product}', [ProductController::class, 'show'])->name('products.show');
+            Route::get('/orders', [SupplierOrdersController::class, 'index'])->name('supplier.orders.index');
+            Route::post('/orders/{order}/update-status', [SupplierOrdersController::class, 'updateStatus'])->name('supplier.orders.updateStatus');
+
+            Route::put('/orders/{order}/change-status', [SupplierOrdersController::class, 'changeStatus'])
+                ->name('supplier.orders.changeStatus');
+
+            Route::post('/orders/{order}/cancel', [SupplierOrdersController::class, 'cancel'])
+                ->name('supplier.orders.cancel');
+        });
+    });
     Route::post('products/store', [ProductController::class, 'store'])->name('products.store');
     Route::get('supplier/regions', [RegionController::class, 'supplier_regions'])->name('regions.suppliers');
     Route::put('supplier/regions', [RegionController::class, 'updateRegions'])->name('regions.updateRegions');
@@ -63,7 +88,11 @@ Route::middleware('auth')->group(function () {
     Route::get('orders/create', [ProductController::class, 'create']);
 
 
-    Route::get('Suppliers', [SupplierController::class, 'indexSuppliers'])->name('suppliers.index');
+    Route::get('/productsForCustomer', [CustomerController::class, 'productsForCustomer'])->name('products.productsForCustomer');
+    Route::get('products/supplier/{supplierId}', [CustomerController::class, 'productsBySupplier'])->name('products.productsBySupplier');
+    Route::get('products/show/{id}', [CustomerController::class, 'showProduct'])->name('products.showProduct');
+
+
     Route::get('Suppliers/{supplier}', [SupplierController::class, 'show']);
     Route::get('Supplier/Products/{supplier}', [SupplierController::class, 'showSupplierProducts'])->name('supplier.products');
 
