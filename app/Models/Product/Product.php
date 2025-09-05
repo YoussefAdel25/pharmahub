@@ -4,9 +4,8 @@ namespace App\Models\Product;
 
 use App\Models\User;
 use App\Models\Region\Region;
-use App\Models\Order\Discount;
 use App\Models\Order\OrderItem;
-use App\Models\Supplier\Supplier;
+use App\Models\Order\SupplierDiscount;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -14,12 +13,12 @@ class Product extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['supplier_id', 'name', 'description', 'price', 'stock', 'quota_limit', 'region_id'];
+    protected $fillable = ['supplier_id', 'name', 'description', 'price', 'stock', 'quota_limit', 'image'];
 
-public function supplier()
-{
-    return $this->belongsTo(User::class, 'supplier_id');
-}
+    public function supplier()
+    {
+        return $this->belongsTo(User::class, 'supplier_id');
+    }
     public function region()
     {
         return $this->belongsTo(Region::class);
@@ -32,6 +31,6 @@ public function supplier()
 
     public function discounts()
     {
-        return $this->hasMany(Discount::class);
+        return $this->hasMany(SupplierDiscount::class);
     }
 }

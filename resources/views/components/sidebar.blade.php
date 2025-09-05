@@ -20,8 +20,8 @@
 
         {{-- ✅ Pharmacy --}}
         @if(Auth::user() && Auth::user()->role === 'pharmacy')
-            <li><a href="{{ route('products.index') }}">Browse Products</a></li>
-            <li><a href="{{ route('orders.index') }}">My Orders</a></li>
+            <li><a href="{{ route('suppliers.index') }}">Browse Products</a></li>
+            <li><a href="">My Orders</a></li>
         @endif
     </ul>
 </div>

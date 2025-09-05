@@ -30,6 +30,6 @@ class DatabaseSeeder extends Seeder
             )
             ->create();
 
-        Discount::factory(10)->create();
+        SupplierDiscount::factory(10)->create();
     }
 }

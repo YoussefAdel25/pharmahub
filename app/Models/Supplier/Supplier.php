@@ -32,6 +32,6 @@ class Supplier extends Model
 
     public function discounts()
     {
-        return $this->hasMany(Discount::class);
+        return $this->hasMany(SupplierDiscount::class);
     }
 }

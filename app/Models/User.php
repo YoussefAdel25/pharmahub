@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Region\Region;
 use App\Models\Pharmacy\Pharmacy;
 use App\Models\Supplier\Supplier;
 use Illuminate\Notifications\Notifiable;
@@ -12,7 +13,7 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    protected $fillable = ['name', 'email', 'password', 'role'];
+    protected $fillable = ['name', 'email', 'password', 'role', 'region_id'];
 
     protected $hidden = ['password', 'remember_token'];
 
@@ -39,4 +40,8 @@ class User extends Authenticatable
     {
         return $this->hasOne(Pharmacy::class);
     }
+    public function region() {
+    return $this->belongsTo(Region::class);
+}
+
 }

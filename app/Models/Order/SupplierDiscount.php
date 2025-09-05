@@ -2,20 +2,20 @@
 
 namespace App\Models\Order;
 
+use App\Models\User;
 use App\Models\Product\Product;
-use App\Models\Supplier\Supplier;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class Discount extends Model
+class SupplierDiscount extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['supplier_id', 'product_id', 'discount_type', 'value', 'start_date', 'end_date'];
+    protected $fillable = ['supplier_id', 'product_id', 'discount_rate'];
 
-    public function supplier()
-    {
-        return $this->belongsTo(Supplier::class);
+
+    public function supplier() {
+        return $this->belongsTo(User::class);
     }
 
     public function product()

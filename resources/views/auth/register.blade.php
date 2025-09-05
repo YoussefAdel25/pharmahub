@@ -22,7 +22,6 @@
                 <input type="password" name="password" class="form-control" required>
             </div>
 
-            {{-- Select Region --}}
             <div class="mb-3">
                 <label>Region</label>
                 <select name="region_id" class="form-control" required>
