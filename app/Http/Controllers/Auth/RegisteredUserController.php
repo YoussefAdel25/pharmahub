@@ -19,8 +19,7 @@ class RegisteredUserController extends Controller
      */
     public function create(): View
     {
-        $regions = \App\Models\Region\Region::all();
-        return view('auth.register', compact('regions'));
+        return view('auth.register');
     }
 
     /**
@@ -34,15 +33,13 @@ class RegisteredUserController extends Controller
             'name'       => ['required', 'string', 'max:255'],
             'email'      => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password'   => ['required'],
-            'region_id'  => ['required', 'exists:regions,id'],
-            'role'       => ['required', 'in:supplier,pharmacy'],
+            'role'       => ['required', 'in:supplier,Customer'],
         ]);
 
         $user = User::create([
             'name'      => $request->name,
             'email'     => $request->email,
             'password'  => Hash::make($request->password),
-            'region_id' => $request->region_id,
             'role'      => $request->role,
         ]);
 

@@ -12,7 +12,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/products/{id}', [ProductController::class, 'destroy'])->middleware('role:supplier');
 
     // Orders
-    Route::post('/orders', [OrderController::class, 'store'])->middleware('role:pharmacy');
+    Route::post('/orders', [OrderController::class, 'store'])->middleware('role:Customer');
     Route::get('/orders/{id}', [OrderController::class, 'show']);
     Route::put('/orders/{id}/status', [OrderController::class, 'updateStatus'])->middleware('role:supplier');
 });

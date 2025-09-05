@@ -61,6 +61,12 @@ class CartController extends \App\Http\Controllers\Controller
             $cartItem->save();
         }
 
-        return response()->json(['success' => true, 'quantity' => $cartItem ? $cartItem->quantity : 0]);
+        $count = CartItem::where('user_id', $userId)->sum('quantity');
+
+        return response()->json([
+            'success' => true,
+            'quantity' => $cartItem ? $cartItem->quantity : 0,
+            'count' => $count,
+        ]);
     }
 }

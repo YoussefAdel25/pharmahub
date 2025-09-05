@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use App\Models\Region\Region;
-use App\Models\Pharmacy\Pharmacy;
+use App\Models\Customer\Customer;
 use App\Models\Supplier\Supplier;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,7 +13,7 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    protected $fillable = ['name', 'email', 'password', 'role', 'region_id'];
+    protected $fillable = ['name', 'email', 'password', 'role'];
 
     protected $hidden = ['password', 'remember_token'];
 
@@ -26,9 +26,9 @@ class User extends Authenticatable
     {
         return $this->role === 'supplier';
     }
-    public function isPharmacy()
+    public function isCustomer()
     {
-        return $this->role === 'pharmacy';
+        return $this->role === 'Customer';
     }
 
     public function supplier()
@@ -36,12 +36,18 @@ class User extends Authenticatable
         return $this->hasOne(Supplier::class);
     }
 
-    public function pharmacy()
+    public function Customer()
     {
-        return $this->hasOne(Pharmacy::class);
+        return $this->hasOne(Customer::class);
     }
-    public function region() {
-    return $this->belongsTo(Region::class);
-}
+    public function regions()
+    {
+        return $this->belongsToMany(Region::class, 'region_supplier', 'supplier_id', 'region_id');
+    }
 
+    // User.php
+    public function deliveryRegions()
+    {
+        return $this->belongsToMany(Region::class, 'region_supplier', 'supplier_id', 'region_id');
+    }
 }

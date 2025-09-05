@@ -3,7 +3,7 @@
 namespace App\Http;
 
 use App\Http\Middleware\IsAdmin;
-use App\Http\Middleware\IsPharmacy;
+use App\Http\Middleware\IsCustomer;
 use App\Http\Middleware\IsSupplier;
 use App\Http\Middleware\TrimStrings;
 use App\Http\Middleware\Authenticate;
@@ -69,7 +69,7 @@ class Kernel extends HttpKernel
         'password.confirm' => \Illuminate\Auth\Middleware\RequirePassword::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'supplier' => IsSupplier::class,
-        'pharmacy' => IsPharmacy::class,
+        'Customer' => IsCustomer::class,
         'admin' => IsAdmin::class,
     ];
 }

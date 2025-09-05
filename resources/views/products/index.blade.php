@@ -50,7 +50,7 @@
                                     <button class="btn btn-danger btn-sm">Delete</button>
                                 </form>
                             @endcan
-                            @can('isPharmacy')
+                            @can('isCustomer')
                                 <a href="{{ route('orders.create', ['product' => $product->id]) }}"
                                     class="btn btn-success btn-sm">Order</a>
                             @endcan

@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\Pharmacy;
+namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-class PharmacyController extends Controller
+class CustomerController extends Controller
 {
     //
 }

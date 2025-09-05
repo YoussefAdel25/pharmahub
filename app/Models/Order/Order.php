@@ -3,7 +3,7 @@
 namespace App\Models\Order;
 
 use App\Models\User;
-use App\Models\Pharmacy\Pharmacy;
+use App\Models\Customer\Customer;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -11,11 +11,11 @@ class Order extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['pharmacy_id', 'status', 'total_price'];
+    protected $fillable = ['Customer_id', 'status', 'total_price'];
 
-    public function pharmacy()
+    public function Customer()
     {
-        return $this->belongsTo(Pharmacy::class);
+        return $this->belongsTo(Customer::class);
     }
 
     public function orderItems()

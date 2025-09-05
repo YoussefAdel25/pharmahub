@@ -23,8 +23,8 @@ class RedirectIfAuthenticated
             return redirect(RouteServiceProvider::SUPPLIER);
         }
 
-        if (auth('pharmacy')->check()) {
-            return redirect(RouteServiceProvider::PHARMACY);
+        if (auth('Customer')->check()) {
+            return redirect(RouteServiceProvider::Customer);
         }
 
         return $next($request);

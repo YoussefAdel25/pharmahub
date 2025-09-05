@@ -3,7 +3,7 @@
 namespace App\Models\Region;
 
 use App\Models\Product\Product;
-use App\Models\Pharmacy\Pharmacy;
+use App\Models\Customer\Customer;
 use App\Models\Supplier\Supplier;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -21,7 +21,7 @@ class Region extends Model
 
     public function pharmacies()
     {
-        return $this->hasMany(Pharmacy::class);
+        return $this->hasMany(Customer::class);
     }
 
     public function products()

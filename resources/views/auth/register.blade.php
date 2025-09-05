@@ -23,21 +23,11 @@
             </div>
 
             <div class="mb-3">
-                <label>Region</label>
-                <select name="region_id" class="form-control" required>
-                    <option value="">-- Select Region --</option>
-                    @foreach($regions as $region)
-                        <option value="{{ $region->id }}">{{ $region->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="mb-3">
                 <label>Role</label>
                 <select name="role" class="form-control" required>
                     <option value="">-- Select Role --</option>
                     <option value="supplier">Supplier</option>
-                    <option value="pharmacy">Pharmacy</option>
+                    <option value="customer">Customer</option>
                 </select>
             </div>
 

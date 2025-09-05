@@ -18,7 +18,7 @@ class SupplierController extends Controller
             ->where('region_id', $user->region_id)
             ->get();
 
-        return view('pharmacy.suppliers', compact('suppliers'));
+        return view('Customer.suppliers', compact('suppliers'));
     }
 
     public function showSupplierProducts($supplier_id)
@@ -30,6 +30,6 @@ class SupplierController extends Controller
 
         $products = Product::where('supplier_id', $supplier_id)->get();
 
-        return view('pharmacy.products', compact('supplier', 'products'));
+        return view('Customer.products', compact('supplier', 'products'));
     }
 }

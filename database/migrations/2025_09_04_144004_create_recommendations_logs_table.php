@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('recommendations_logs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('pharmacy_id')->constrained()->onDelete('cascade');
+            $table->foreignId('Customer_id')->constrained()->onDelete('cascade');
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
             $table->string('reason')->nullable();
             $table->timestamps();
