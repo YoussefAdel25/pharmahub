@@ -13,19 +13,19 @@ class ProductController extends Controller
 
     public function index()
     {
-        $products = Product::where('supplier_id', auth()->id())->get();
+        $products = Product::where('supplier_id', Auth::id())->get();
 
         $discounts = SupplierDiscount::all()->keyBy(function ($item) {
             return $item->supplier_id . '-' . $item->product_id;
         });
 
-        return view('products.index', compact('products', 'discounts'));
+        return view('supplier.products.index', compact('products', 'discounts'));
     }
 
 
     public function create()
     {
-        return view('products.create');
+        return view('supplier.products.create');
     }
 
 
@@ -43,7 +43,7 @@ class ProductController extends Controller
             'image'        => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $validated['supplier_id'] = auth()->id();
+        $validated['supplier_id'] = Auth::id();
 
         if ($request->hasFile('image')) {
             $validated['image'] = $request->file('image')->store('products', 'public');
@@ -52,7 +52,7 @@ class ProductController extends Controller
         $product = Product::create($validated);
 
         SupplierDiscount::updateOrCreate(
-            ['supplier_id' => auth()->id(), 'product_id' => $product->id],
+            ['supplier_id' => Auth::id(), 'product_id' => $product->id],
             ['discount_rate' => $validated['discount']]
         );
         if (Auth::user()->role === 'admin') {
@@ -73,14 +73,14 @@ class ProductController extends Controller
             $product = Product::with('supplier')->findOrFail($id);
             $discount = SupplierDiscount::where('product_id', $id)->first();
             $discount = $discount ? $discount->discount_rate : 0;
-            return view('products.edit', compact('product', 'discount'));
+            return view('supplier.products.edit', compact('product', 'discount'));
         } else {
-            $product  = Product::where('supplier_id', auth()->id())->findOrFail($id);
-            $discount = SupplierDiscount::where('supplier_id', auth()->id())
+            $product  = Product::where('supplier_id', Auth::id())->findOrFail($id);
+            $discount = SupplierDiscount::where('supplier_id', Auth::id())
                 ->where('product_id', $id)
                 ->first();
             $discount = $discount ? $discount->discount_rate : 0;
-            return view('products.edit', compact('product', 'discount'));
+            return view('supplier.products.edit', compact('product', 'discount'));
         }
     }
 
@@ -90,7 +90,7 @@ class ProductController extends Controller
         if (Auth::user()->role === 'admin') {
             $product = Product::with('supplier')->findOrFail($id);
         } else {
-            $product = Product::where('supplier_id', auth()->id())->findOrFail($id);
+            $product = Product::where('supplier_id', Auth::id())->findOrFail($id);
         }
 
         $validated = $request->validate([
@@ -108,7 +108,7 @@ class ProductController extends Controller
 
         if (isset($validated['discount'])) {
             SupplierDiscount::updateOrCreate(
-                ['supplier_id' => auth()->id(), 'product_id' => $product->id],
+                ['supplier_id' => Auth::id(), 'product_id' => $product->id],
                 ['discount_rate' => $validated['discount']]
             );
         }
@@ -129,21 +129,21 @@ class ProductController extends Controller
             $product = Product::with('supplier')->findOrFail($id);
             $discount = SupplierDiscount::where('product_id', $id)->first();
             $discount = $discount ? $discount->discount_rate : 0;
-            return view('products.show', compact('product', 'discount'));
+            return view('supplier.products.show', compact('product', 'discount'));
         } else {
-            $product  = Product::where('supplier_id', auth()->id())->findOrFail($id);
-            $discount = SupplierDiscount::where('supplier_id', auth()->id())
+            $product  = Product::where('supplier_id', Auth::id())->findOrFail($id);
+            $discount = SupplierDiscount::where('supplier_id', Auth::id())
                 ->where('product_id', $id)
                 ->first();
             $discount = $discount ? $discount->discount_rate : 0;
-            return view('products.show', compact('product', 'discount'));
+            return view('supplier.products.show', compact('product', 'discount'));
         }
     }
 
 
     public function destroy($id)
     {
-        $product = Product::where('supplier_id', auth()->id())->findOrFail($id);
+        $product = Product::findOrFail($id);
         $product->delete();
         if (Auth::user()->role === 'admin') {
             return redirect()->route('allProducts.index')

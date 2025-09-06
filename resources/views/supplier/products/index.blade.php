@@ -38,7 +38,7 @@
 </style>
 @section('content')
     <div class="container py-4">
-         <div id="alertContainer"></div>
+        <div id="alertContainer"></div>
 
         @if (session('success'))
             <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
@@ -49,19 +49,20 @@
 
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1>Products</h1>
-            <a href="{{ route('products.create') }}" class="btn btn-primary">
+            <a href="{{ route('supplier.products.create') }}" class="btn btn-primary">
                 + Add Product
             </a>
         </div>
 
         <div class="row g-4">
             @foreach ($products as $product)
-                    <div class="col-md-4" id="productCard{{ $product->id }}">
+                <div class="col-md-4" id="productCard{{ $product->id }}">
 
                     <div class="card h-100 shadow-sm position-relative product-card">
 
                         <div class="product-actions">
-                            <a href="{{ route('products.edit', $product) }}" class="product-action-icon" title="Edit">
+                            <a href="{{ route('supplier.products.edit', $product) }}" class="product-action-icon"
+                                title="Edit">
                                 <i class="bi bi-pencil"></i>
                             </a>
 
@@ -71,7 +72,7 @@
                             </button>
                         </div>
 
-                        <a href="{{ route('products.show', $product) }}" class="text-decoration-none text-dark">
+                        <a href="{{ route('supplier.products.show', $product) }}" class="text-decoration-none text-dark">
                             @if ($product->image)
                                 <img src="{{ asset('storage/' . $product->image) }}" class="card-img-top"
                                     alt="{{ $product->name }}" style="height: 220px; object-fit: cover;">
@@ -109,7 +110,7 @@
                             </div>
                         </a>
 
-                            {{--  <div class="card-footer text-center">
+                        {{--  <div class="card-footer text-center">
                                 <a href="{{ route('orders.create', ['product' => $product->id]) }}"
                                     class="btn btn-success w-100">
                                     Order Now
@@ -154,53 +155,50 @@
 @endsection
 @section('js')
     <script>
+        let deleteProductId = null;
 
-    let deleteProductId = null;
+        $(document).ready(function() {
+            $('.delete-btn').click(function() {
+                deleteProductId = $(this).data('id');
+                let productName = $(this).data('name');
+                $('#deleteProductName').text(productName);
+                var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+                deleteModal.show();
+            });
 
-    $(document).ready(function() {
-        $('.delete-btn').click(function() {
-            deleteProductId = $(this).data('id');
-            let productName = $(this).data('name');
-            $('#deleteProductName').text(productName);
-            var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-            deleteModal.show();
-        });
+            $('#confirmDeleteBtn').click(function() {
+                if (!deleteProductId) return;
 
-        $('#confirmDeleteBtn').click(function() {
-            if (!deleteProductId) return;
+                $.ajax({
+                    url: '/supplier/products/delete/' + deleteProductId,
+                    type: 'POST',
+                    data: {
+                        _method: 'DELETE',
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        $('#deleteModal').modal('hide');
 
-            $.ajax({
-                url: '/supplier/products/delete/' + deleteProductId,
-                type: 'POST',
-                data: {
-                    _method: 'DELETE',
-                    _token: '{{ csrf_token() }}'
-                },
-success: function(response) {
-    $('#deleteModal').modal('hide');
+                        $('#productCard' + deleteProductId).remove();
+                        deleteProductId = null;
 
-    $('#productCard' + deleteProductId).remove();
-    deleteProductId = null;
-
-    let alertHtml = `
+                        let alertHtml = `
         <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
             ${response.message}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     `;
-    $('#alertContainer').html(alertHtml);
+                        $('#alertContainer').html(alertHtml);
 
-    setTimeout(() => {
-        $('.alert').alert('close');
-    }, 3000);
-},
-                error: function(xhr) {
-                    alert('Something went wrong!');
-                }
+                        setTimeout(() => {
+                            $('.alert').alert('close');
+                        }, 3000);
+                    },
+                    error: function(xhr) {
+                        alert('Something went wrong!');
+                    }
+                });
             });
         });
-    });
-
-
     </script>
 @endsection

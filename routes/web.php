@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\homeController;
-use Monolog\Handler\RotatingFileHandler;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Cart\CartController;
 use App\Http\Controllers\User\UserController;
@@ -14,103 +13,101 @@ use App\Http\Controllers\Customer\CustomerController;
 use App\Http\Controllers\Supplier\SupplierController;
 use App\Http\Controllers\order\SupplierOrdersController;
 
-
-Route::get('/', [homeController::class, 'index'])
-    ->middleware('auth')
-    ->name('dashboard');
-
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
-
-
+require __DIR__ . '/auth.php';
 
 Route::middleware('auth')->group(function () {
 
-    Route::get('/products/by-region', [ProductController::class, 'getByRegion']);
-    Route::post('/cart/checkout', [CheckoutController::class, 'checkout'])->name('cart.checkout');
-
-    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
-    Route::get('/supplier/{id}/products', [SupplierController::class, 'products'])->name('supplier.products');
-    Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
-
-Route::prefix('admin')->group(function () {
-    // Users Management
-    Route::get('/users', [UserController::class, 'index'])->name('users.index');
-    Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
-    Route::post('/users/store', [UserController::class, 'store'])->name('users.store');
-    Route::get('/users/edit/{user}', [UserController::class, 'edit'])->name('users.edit');
-    Route::put('/users/update/{user}', [UserController::class, 'update'])->name('users.update');
-    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
-    Route::post('/users/bulk-delete', [UserController::class, 'bulkDelete'])->name('users.bulkDelete');
-
-    // Products Management
-    Route::get('/products', [ProductController::class, 'allProducts'])->name('allProducts.index');
-
-    // Orders Management
-    Route::get('/orders', [OrderController::class, 'allOrders'])->name('allOrders.index');
-});
+    Route::prefix('profile')->group(function () {
+        Route::get('/', [ProfileController::class, 'index'])->name('profile.show');
+        Route::get('/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::patch('/update', [ProfileController::class, 'update'])->name('profile.update');
+        Route::delete('/destroy', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    });
 
 
-    Route::get('/products', [ProductController::class, 'index'])->name('products.index');
-    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
-    Route::get('/regions', [RegionController::class, 'index'])->name('region.index');
-    Route::get('/regions/create', [RegionController::class, 'create'])->name('region.create');
-    Route::post('/regions/store', [RegionController::class, 'store'])->name('region.store');
-    Route::put('/regions/edit/{region}', [RegionController::class, 'edit'])->name('region.edit');
-    Route::put('/regions/update/{region}', [RegionController::class, 'update'])->name('region.update');
-    Route::delete('/regions/delete/{region}', [RegionController::class, 'destroy'])->name('region.destroy');
-    Route::delete('/regions/destroySupplierRegion/{region}', [RegionController::class, 'destroySupplierRegion'])->name('region.destroySupplierRegion');
+    Route::get('/', [homeController::class, 'index'])->name('dashboard');
 
-    //supplier
+
+    Route::prefix('products')->group(function () {
+        Route::get('/', [ProductController::class, 'index'])->name('products.index');
+        Route::get('/by-region', [ProductController::class, 'getByRegion']);
+        Route::get('/supplier/{supplierId}', [CustomerController::class, 'productsBySupplier'])->name('products.productsBySupplier');
+        Route::get('/show/{id}', [CustomerController::class, 'showProduct'])->name('products.showProduct');
+    });
+
+
+    Route::prefix('orders')->group(function () {
+        Route::get('/', [OrderController::class, 'index'])->name('orders.index');
+        Route::get('/create', [OrderController::class, 'create']);
+        Route::get('/{order}', [OrderController::class, 'show']);
+        Route::post('/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+    });
+
+
+    Route::prefix('cart')->group(function () {
+        Route::post('/add', [CartController::class, 'add'])->name('cart.add');
+        Route::post('/index', [CartController::class, 'index'])->name('cart.index');
+        Route::post('/update', [CartController::class, 'update']);
+        Route::get('/items', [CartController::class, 'items'])->name('cart.items');
+        Route::post('/checkout', [CheckoutController::class, 'checkout'])->name('cart.checkout');
+    });
+
+
+    Route::prefix('regions')->group(function () {
+        Route::get('/', [RegionController::class, 'index'])->name('region.index');
+        Route::get('/create', [RegionController::class, 'create'])->name('region.create');
+        Route::post('/store', [RegionController::class, 'store'])->name('region.store');
+        Route::get('/edit/{region}', [RegionController::class, 'edit'])->name('region.edit');
+        Route::put('/update/{region}', [RegionController::class, 'update'])->name('region.update');
+        Route::delete('/delete/{region}', [RegionController::class, 'destroy'])->name('region.destroy');
+        Route::delete('/destroySupplierRegion/{region}', [RegionController::class, 'destroySupplierRegion'])->name('region.destroySupplierRegion');
+        Route::get('/suppliers', [RegionController::class, 'supplier_regions'])->name('regions.suppliers');
+        Route::put('/suppliers/update', [RegionController::class, 'updateRegions'])->name('regions.updateRegions');
+    });
+
 
     Route::prefix('supplier')->group(function () {
-        Route::controller(ProductController::class)->group(function () {
-            Route::get('products', 'index')->name('products.index');
-            Route::get('products/create', 'create')->name('products.create');
-            Route::post('products/store', 'store')->name('products.store');
-            Route::get('products/show/{id}', 'show')->name('products.show');
-            Route::get('products/edit/{id}', 'edit')->name('products.edit');
-            Route::put('products/update/{id}', 'update')->name('products.update');
-            Route::delete('products/delete/{id}', 'destroy')->name('products.destroy');
 
-            Route::get('/orders', [SupplierOrdersController::class, 'index'])->name('supplier.orders.index');
-            Route::post('/orders/{order}/update-status', [SupplierOrdersController::class, 'updateStatus'])->name('supplier.orders.updateStatus');
+        Route::prefix('products')->controller(ProductController::class)->group(function () {
+            Route::get('/', 'index')->name('supplier.products.index');
+            Route::get('/create', 'create')->name('supplier.products.create');
+            Route::post('/store', 'store')->name('supplier.products.store');
+            Route::get('/show/{id}', 'show')->name('supplier.products.show');
+            Route::get('/edit/{id}', 'edit')->name('supplier.products.edit');
+            Route::put('/update/{id}', 'update')->name('supplier.products.update');
+            Route::delete('/delete/{id}', 'destroy')->name('supplier.products.destroy');
+        });
 
-            Route::put('/orders/{order}/change-status', [SupplierOrdersController::class, 'changeStatus'])
-                ->name('supplier.orders.changeStatus');
-
-            Route::post('/orders/{order}/cancel', [SupplierOrdersController::class, 'cancel'])
-                ->name('supplier.orders.cancel');
+        Route::prefix('orders')->controller(SupplierOrdersController::class)->group(function () {
+            Route::get('/', 'index')->name('supplier.orders.index');
+            Route::post('/{order}/update-status', 'updateStatus')->name('supplier.orders.updateStatus');
+            Route::put('/{order}/change-status', 'changeStatus')->name('supplier.orders.changeStatus');
+            Route::post('/{order}/cancel', 'cancel')->name('supplier.orders.cancel');
         });
     });
-    Route::post('products/store', [ProductController::class, 'store'])->name('products.store');
-    Route::get('supplier/regions', [RegionController::class, 'supplier_regions'])->name('regions.suppliers');
-    Route::put('supplier/regions', [RegionController::class, 'updateRegions'])->name('regions.updateRegions');
-    Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
-    Route::get('orders/{product}', [ProductController::class, 'show']);
-    Route::get('orders/create', [ProductController::class, 'create']);
+
+    Route::prefix('admin')->group(function () {
+
+        // Users Management
+        Route::prefix('users')->controller(UserController::class)->group(function () {
+            Route::get('/', 'index')->name('users.index');
+            Route::get('/create', 'create')->name('users.create');
+            Route::post('/store', 'store')->name('users.store');
+            Route::get('/edit/{user}', 'edit')->name('users.edit');
+            Route::put('/update/{user}', 'update')->name('users.update');
+            Route::delete('/{user}', 'destroy')->name('users.destroy');
+            Route::post('/bulk-delete', 'bulkDelete')->name('users.bulkDelete');
+        });
+
+        Route::get('/products', [ProductController::class, 'allProducts'])->name('allProducts.index');
+
+        Route::get('/orders', [OrderController::class, 'allOrders'])->name('allOrders.index');
+    });
 
 
     Route::get('/productsForCustomer', [CustomerController::class, 'productsForCustomer'])->name('products.productsForCustomer');
-    Route::get('products/supplier/{supplierId}', [CustomerController::class, 'productsBySupplier'])->name('products.productsBySupplier');
-    Route::get('products/show/{id}', [CustomerController::class, 'showProduct'])->name('products.showProduct');
 
 
-    Route::get('Suppliers/{supplier}', [SupplierController::class, 'show']);
-    Route::get('Supplier/Products/{supplier}', [SupplierController::class, 'showSupplierProducts'])->name('supplier.products');
-
-    Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
-    Route::post('/cart/index', [CartController::class, 'index'])->name('cart.index');
-    Route::post('/cart/update', [CartController::class, 'update']);
-    Route::get('/cart/items', [CartController::class, 'items'])->name('cart.items');
-
-    Route::get('orders', [OrderController::class, 'index'])->name('orders.index');
-    Route::get('orders/{order}', [OrderController::class, 'show']);
-    Route::get('orders/create', [OrderController::class, 'create']);
+    Route::get('/Suppliers/{supplier}', [SupplierController::class, 'show']);
+    Route::get('/Supplier/Products/{supplier}', [SupplierController::class, 'showSupplierProducts'])->name('supplier.products');
 });
-
-require __DIR__ . '/auth.php';

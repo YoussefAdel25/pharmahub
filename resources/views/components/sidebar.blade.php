@@ -5,7 +5,6 @@
             <a href="{{ url('/') }}">Dashboard</a>
         </li>
 
-        {{-- ✅ Admin --}}
         @if(Auth::user() && Auth::user()->role === 'admin')
             <li><a href="{{ route('products.index') }}">Manage Products</a></li>
             <li><a href="{{ route('orders.index') }}">Manage Orders</a></li>
@@ -13,7 +12,6 @@
             <li><a href="{{ route('region.index') }}">Manage Regions</a></li>
         @endif
 
-        {{-- ✅ Supplier --}}
         @if(Auth::user() && Auth::user()->role === 'supplier')
             <li><a href="{{ route('products.index') }}">My Products</a></li>
             <li><a href="{{ route('supplier.orders.index') }}">Orders from Customers</a></li>
@@ -21,7 +19,6 @@
 
         @endif
 
-        {{-- ✅ Customer --}}
         @if(Auth::user() && Auth::user()->role === 'customer')
             <li><a href="{{ route('products.productsForCustomer') }}">Browse Products</a></li>
             <li><a href="{{ route('orders.index') }}">My Orders</a></li>
