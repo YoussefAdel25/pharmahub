@@ -13,12 +13,23 @@ class Product extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['supplier_id', 'name', 'description', 'price', 'stock', 'quota_limit', 'image','type','quota_period'];
+    protected $fillable = [
+        'supplier_id',
+        'name',
+        'description',
+        'price',
+        'stock',
+        'quota_limit',
+        'image',
+        'type',
+        'quota_period'
+    ];
 
     public function supplier()
     {
         return $this->belongsTo(User::class, 'supplier_id');
     }
+
     public function region()
     {
         return $this->belongsTo(Region::class);
@@ -32,5 +43,17 @@ class Product extends Model
     public function discounts()
     {
         return $this->hasMany(SupplierDiscount::class);
+    }
+
+    public function orders()
+    {
+        return $this->hasManyThrough(
+            \App\Models\Order\Order::class,
+            \App\Models\Order\OrderItem::class,
+            'product_id',
+            'id',
+            'id',
+            'order_id'
+        );
     }
 }

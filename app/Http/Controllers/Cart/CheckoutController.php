@@ -3,13 +3,14 @@
 namespace App\Http\Controllers\Cart;
 
 use App\Models\Order\Order;
-use App\Models\Order\OrderItem;
-use App\Models\Cart\CartItem;
 use Illuminate\Http\Request;
+use App\Models\Cart\CartItem;
+use App\Models\Order\OrderItem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Customer\CustomerAction;
 
 class CheckoutController extends Controller
 {
@@ -109,6 +110,12 @@ class CheckoutController extends Controller
                     'quantity_executed' => $executedQty,
                     'price' => $item->price,
                     'is_partially_executed' => $item->quantity > $executedQty,
+                ]);
+                CustomerAction::create([
+                    'user_id' => $userId,
+                    'session_id' => session()->getId(),
+                    'action_type' => 'order_placed',
+                    'product_id' => $product->id,
                 ]);
 
                 $product->decrement('stock', $executedQty);

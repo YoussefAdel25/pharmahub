@@ -29,10 +29,7 @@ class User extends Authenticatable
         return $this->hasOne(Supplier::class);
     }
 
-    public function Customer()
-    {
-        return $this->hasOne(Customer::class);
-    }
+
     public function regions()
     {
         return $this->belongsToMany(Region::class, 'region_supplier', 'supplier_id', 'region_id');
@@ -46,5 +43,15 @@ class User extends Authenticatable
     public function orders()
     {
         return $this->hasMany(Order::class, 'user_id');
+    }
+
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isSupplier()
+    {
+        return $this->role === 'supplier';
     }
 }

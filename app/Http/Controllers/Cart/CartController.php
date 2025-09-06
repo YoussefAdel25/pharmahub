@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\Cart;
 
-use Illuminate\Http\Request;
 use App\Models\Product;
+use Illuminate\Http\Request;
 use App\Models\Cart\CartItem;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Customer\CustomerAction;
 
 class CartController extends \App\Http\Controllers\Controller
 {
@@ -27,6 +28,12 @@ class CartController extends \App\Http\Controllers\Controller
 
         $cartItem->quantity += (int) $request->quantity;
         $cartItem->price = $request->price;
+        CustomerAction::create([
+            'user_id' => auth()->id(),
+            'session_id' => session()->getId(),
+            'action_type' => 'add_to_cart',
+            'product_id' => $productId,
+        ]);
         $cartItem->save();
 
         return response()->json(['success' => true, 'quantity' => $cartItem->quantity]);

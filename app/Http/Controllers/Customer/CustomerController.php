@@ -7,6 +7,7 @@ use App\Models\Product\Product;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use App\Models\Order\SupplierDiscount;
+use App\Models\Customer\CustomerAction;
 
 class CustomerController extends Controller
 {
@@ -43,14 +44,35 @@ class CustomerController extends Controller
                 ->toArray();
         }
 
+        $topViewed = CustomerAction::select('product_id', DB::raw('count(*) as views'))
+            ->where('action_type', 'view_product')
+            ->groupBy('product_id')
+            ->get();
+
+        $mostAddedToCart = CustomerAction::select('product_id', DB::raw('count(*) as adds'))
+            ->where('action_type', 'add_to_cart')
+            ->groupBy('product_id')
+            ->get();
+
+        $interactionScores = [];
+
+        foreach ($topViewed as $item) {
+            $interactionScores[$item->product_id] = ($interactionScores[$item->product_id] ?? 0) + $item->views;
+        }
+        foreach ($mostAddedToCart as $item) {
+            $interactionScores[$item->product_id] = ($interactionScores[$item->product_id] ?? 0) + $item->adds * 2;
+        }
+
         $recommendedProducts = collect();
 
-        if (!empty($frequentTogether)) {
+        if (!empty($interactionScores)) {
             $recommendedProducts = Product::with('supplier')
-                ->whereIn('id', array_keys($frequentTogether))
+                ->whereIn('id', array_keys($interactionScores))
                 ->whereIn('supplier_id', $supplierIds)
                 ->get()
-                ->map(fn($product) => $this->mapProductWithDiscountAndQuota($product, $user));
+                ->map(fn($product) => $this->mapProductWithDiscountAndQuota($product, $user))
+                ->filter(fn($product) => $product->quota_remaining > 0)
+                ->values();
         }
 
         if ($recommendedProducts->isEmpty() && !empty($purchasedProductIds)) {
@@ -58,24 +80,28 @@ class CustomerController extends Controller
             $recommendedProducts = Product::with('supplier')
                 ->whereIn('supplier_id', $supplierIds)
                 ->where('id', '!=', $firstPurchasedProduct->id)
-                ->where('type', $firstPurchasedProduct->type) 
-                ->limit(5)
+                ->where('type', $firstPurchasedProduct->type)
                 ->get()
-                ->map(fn($product) => $this->mapProductWithDiscountAndQuota($product, $user));
+                ->map(fn($product) => $this->mapProductWithDiscountAndQuota($product, $user))
+                ->filter(fn($product) => $product->quota_remaining > 0)
+                ->values();
         }
 
         if ($recommendedProducts->isEmpty()) {
             $recommendedProducts = Product::with('supplier')
                 ->whereIn('supplier_id', $supplierIds)
-                ->limit(5)
                 ->get()
-                ->map(fn($product) => $this->mapProductWithDiscountAndQuota($product, $user));
+                ->map(fn($product) => $this->mapProductWithDiscountAndQuota($product, $user))
+                ->filter(fn($product) => $product->quota_remaining > 0)
+                ->values();
         }
 
         $discounts = SupplierDiscount::all()->keyBy(fn($item) => $item->supplier_id . '-' . $item->product_id);
 
         return view('customer.products', compact('allProducts', 'recommendedProducts', 'discounts'));
     }
+
+
 
     private function mapProductWithDiscountAndQuota($product, $user)
     {
@@ -110,6 +136,12 @@ class CustomerController extends Controller
     public function showProduct($id)
     {
         $product = Product::findOrFail($id);
+        CustomerAction::create([
+            'user_id' => auth()->id(),
+            'session_id' => session()->getId(),
+            'action_type' => 'view_product',
+            'product_id' => $product->id,
+        ]);
         $discount = SupplierDiscount::where('supplier_id', $product->supplier_id)
             ->where('product_id', $id)
             ->first();

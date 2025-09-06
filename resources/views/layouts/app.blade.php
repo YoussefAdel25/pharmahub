@@ -9,74 +9,75 @@
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
     <style>
         body {
-            display: flex;
             margin: 0;
             font-family: Arial, sans-serif;
-        }
-
-        .sidebar {
-            width: 250px;
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background: #212529;
-            color: #fff;
-        }
-
-        .sidebar a {
-            display: block;
-            padding: 10px 15px;
-            color: #fff;
-            text-decoration: none;
-        }
-
-        .sidebar a:hover {
-            background: #495057;
-        }
-
-        .main-content {
-            margin-left: 250px;
-            width: calc(100% - 250px);
-            min-height: 100vh;
             background: #f8f9fa;
         }
+        .nav-link {
+            color: #fff !important;
+        }
+        .nav-link:hover {
+            background: #495057;
+            border-radius: 5px;
+        }
     </style>
-    <!-- Bootstrap Icons CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-
 </head>
 
 <body>
+    <!-- Top Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container-fluid">
+            <!-- Logo -->
+            <a class="navbar-brand fw-bold" href="/">PharmaHub</a>
 
-    <!-- Sidebar Component -->
-    <x-sidebar />
+            <!-- Toggle for mobile -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        <!-- Navbar -->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="/">PharmaHub</a>
+            <!-- Menu Items -->
+            <div class="collapse navbar-collapse" id="mainNavbar">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+
+                    {{-- ✅ Admin --}}
+                    @if(Auth::user() && Auth::user()->role === 'admin')
+                        <li class="nav-item"><a href="{{ route('allProducts.index') }}" class="nav-link">Manage Products</a></li>
+                        <li class="nav-item"><a href="{{ route('allOrders.index') }}" class="nav-link">Manage Orders</a></li>
+                        <li class="nav-item"><a href="{{ route('users.index') }}" class="nav-link">Manage Users</a></li>
+                        <li class="nav-item"><a href="{{ route('region.index') }}" class="nav-link">Manage Regions</a></li>
+                    @endif
+
+                    {{-- ✅ Supplier --}}
+                    @if(Auth::user() && Auth::user()->role === 'supplier')
+                        <li class="nav-item"><a href="{{ route('products.index') }}" class="nav-link">My Products</a></li>
+                        <li class="nav-item"><a href="{{ route('supplier.orders.index') }}" class="nav-link">Orders</a></li>
+                        <li class="nav-item"><a href="{{ route('regions.suppliers') }}" class="nav-link">Delivery Regions</a></li>
+                    @endif
+
+                    {{-- ✅ Customer --}}
+                    @if(Auth::user() && Auth::user()->role === 'customer')
+                        <li class="nav-item"><a href="{{ route('products.productsForCustomer') }}" class="nav-link">Browse Products</a></li>
+                        <li class="nav-item"><a href="{{ route('orders.index') }}" class="nav-link">My Orders</a></li>
+                    @endif
+                </ul>
+
+                <!-- Right Side (Cart + Auth) -->
                 <ul class="navbar-nav ms-auto">
                     @auth
                         @if (auth()->user()->role === 'customer')
                             <li class="nav-item me-3">
-                                <a class="nav-link position-relative" id="cart-icon">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                        fill="currentColor" class="bi bi-cart" viewBox="0 0 16 16">
-                                        <path
-                                            d="M0 1.5A.5.5 0 0 1 .5 1h1a.5.5 0 0 1 .485.379L2.89 5H14.5a.5.5 0 0 1 .49.598l-1.5 7A.5.5 0 0 1 13 13H4a.5.5 0 0 1-.491-.408L1.01 1.607 0 1.5zm3.14 4l1.25 5.5H13l1.25-5.5H3.14zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 2a2 2 0 1 1-4 0 2 2 0 0 1 4 0z" />
-                                    </svg>
-                                    <span
-                                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                                        id="cart-count">0</span>
+                                <a class="nav-link position-relative" data-bs-toggle="modal" data-bs-target="#cartModal">
+                                    <i class="bi bi-cart"></i>
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-count">0</span>
                                 </a>
                             </li>
                         @endif
+
                         <li class="nav-item"><span class="nav-link">{{ auth()->user()->name }}</span></li>
                         <li class="nav-item">
                             <form method="POST" action="{{ route('logout') }}">
@@ -90,14 +91,15 @@
                     @endauth
                 </ul>
             </div>
-        </nav>
-
-        <!-- Page Content -->
-        <div class="container mt-4">
-            @yield('content')
         </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="container mt-4">
+        @yield('content')
     </div>
 
+    <!-- Cart Modal -->
     <div class="modal fade" id="cartModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -105,8 +107,7 @@
                     <h5 class="modal-title">Your Cart</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body" id="cart-items">
-                </div>
+                <div class="modal-body" id="cart-items"></div>
                 <div class="modal-footer">
                     <strong>Total: $<span id="cart-total">0</span></strong>
                     <form action="{{ route('cart.checkout') }}" method="POST">
@@ -118,16 +119,9 @@
         </div>
     </div>
 
-    <!-- Toast Notification -->
-    <div id="cart-toast" style="position: fixed; top:20px; right:20px; z-index:1050; display:none;">
-        <div class="alert alert-success mb-0">Product added to the basket successfully!</div>
-    </div>
-
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
     @yield('js')
 </body>
-
 </html>

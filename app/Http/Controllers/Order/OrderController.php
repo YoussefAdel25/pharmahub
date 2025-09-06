@@ -9,6 +9,7 @@ use App\Models\Product\Product;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Customer\CustomerAction;
 
 class OrderController extends Controller
 {
@@ -27,11 +28,9 @@ class OrderController extends Controller
     public function cancel($orderId)
     {
         $userId = Auth::id();
-        $order = Order::where('id', $orderId)->where('user_id', $userId)->firstOrFail();
-
-        // if (in_array($order->status, ['completed', 'partially_completed', 'cancelled'])) {
-        //     return redirect()->back()->with('error', 'Cannot cancel this order.');
-        // }
+        $order = Order::where('user_id', $userId)
+            ->where('id', $orderId)
+            ->firstOrFail();
 
         DB::beginTransaction();
 
@@ -41,6 +40,13 @@ class OrderController extends Controller
                 if ($product) {
                     $product->increment('stock', $item->quantity_executed);
                 }
+
+                CustomerAction::create([
+                    'user_id' => $order->user_id,
+                    'session_id' => session()->getId(),
+                    'action_type' => 'order_cancelled',
+                    'product_id' => $item->product_id,
+                ]);
             }
 
             $order->update(['status' => 'cancelled']);
@@ -50,7 +56,22 @@ class OrderController extends Controller
             return redirect()->back()->with('success', 'Order has been cancelled successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Failed to cancel the order. Please try again.');
+
+            \Log::error("Cancel order failed for order_id {$orderId}: " . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()->with('error', 'Failed to cancel the order. Please check the logs.');
         }
+    }
+
+    public function allOrders()
+    {
+            $orders = Order::with('items.product')
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+
+            return view('admin.orders.index', compact('orders'));
+
     }
 }

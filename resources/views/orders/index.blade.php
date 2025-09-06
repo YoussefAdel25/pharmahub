@@ -61,7 +61,7 @@
                                     </tbody>
                                 </table>
 
-                                @if ($order->status !== 'cancelled')
+                                @if ($order->status !== 'cancelled' && $order->status !== 'delivered')
                                     <!-- Cancel Button -->
                                     <button type="button" class="btn btn-danger mt-2" data-bs-toggle="modal"
                                         data-bs-target="#cancelModal{{ $order->id }}">

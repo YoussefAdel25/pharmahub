@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\homeController;
 use Monolog\Handler\RotatingFileHandler;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Cart\CartController;
@@ -13,13 +14,10 @@ use App\Http\Controllers\Customer\CustomerController;
 use App\Http\Controllers\Supplier\SupplierController;
 use App\Http\Controllers\order\SupplierOrdersController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/', [homeController::class, 'index'])
+    ->middleware('auth')
+    ->name('dashboard');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -31,21 +29,30 @@ Route::middleware('auth')->group(function () {
 
 
 Route::middleware('auth')->group(function () {
-    Route::post('/cart/checkout', [CheckoutController::class, 'checkout'])->name('cart.checkout');
 
+    Route::get('/products/by-region', [ProductController::class, 'getByRegion']);
+    Route::post('/cart/checkout', [CheckoutController::class, 'checkout'])->name('cart.checkout');
 
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/supplier/{id}/products', [SupplierController::class, 'products'])->name('supplier.products');
     Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
 
-    //admin
+Route::prefix('admin')->group(function () {
+    // Users Management
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
     Route::post('/users/store', [UserController::class, 'store'])->name('users.store');
     Route::get('/users/edit/{user}', [UserController::class, 'edit'])->name('users.edit');
     Route::put('/users/update/{user}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
-    Route::post('users/bulk-delete', [UserController::class, 'bulkDelete'])->name('users.bulkDelete');
+    Route::post('/users/bulk-delete', [UserController::class, 'bulkDelete'])->name('users.bulkDelete');
+
+    // Products Management
+    Route::get('/products', [ProductController::class, 'allProducts'])->name('allProducts.index');
+
+    // Orders Management
+    Route::get('/orders', [OrderController::class, 'allOrders'])->name('allOrders.index');
+});
 
 
     Route::get('/products', [ProductController::class, 'index'])->name('products.index');
