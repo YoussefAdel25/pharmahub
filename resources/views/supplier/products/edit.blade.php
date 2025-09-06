@@ -9,7 +9,7 @@
 
     <div class="card shadow-sm">
         <div class="card-body">
-            <form action="{{ route('products.update', $product) }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('supplier.products.update', $product) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
 

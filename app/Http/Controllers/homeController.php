@@ -4,16 +4,19 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Order\Order;
-use App\Models\Product\Product;
 use Illuminate\Http\Request;
+use App\Models\Product\Product;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Customer\CustomerController;
 
 class HomeController extends Controller
 {
     public function index()
     {
         $user = auth()->user();
-
+        if ($user->isCustomer()) {
+            return app(CustomerController::class)->productsForCustomer();
+        }
         if ($user->isAdmin()) {
             $topProducts = Product::withCount('orders')
                 ->orderByDesc('orders_count')

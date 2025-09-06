@@ -3,9 +3,6 @@
 namespace App\Http\Controllers\Order;
 
 use App\Models\Order\Order;
-use Illuminate\Http\Request;
-use App\Models\Order\OrderItem;
-use App\Models\Product\Product;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -15,14 +12,14 @@ class OrderController extends Controller
 {
     public function index()
     {
-        $userId = auth()->id();
+        $userId = Auth::id();
 
         $orders = Order::with('items.product')
             ->where('user_id', $userId)
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('orders.index', compact('orders'));
+        return view('customer.orders.index', compact('orders'));
     }
 
     public function cancel($orderId)
@@ -57,9 +54,6 @@ class OrderController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            \Log::error("Cancel order failed for order_id {$orderId}: " . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
-            ]);
 
             return redirect()->back()->with('error', 'Failed to cancel the order. Please check the logs.');
         }
@@ -72,6 +66,5 @@ class OrderController extends Controller
                 ->paginate(10);
 
             return view('admin.orders.index', compact('orders'));
-
     }
 }
